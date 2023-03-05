@@ -1,0 +1,41 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.0.4'
+	id 'io.spring.dependency-management' version '1.1.0'
+}
+
+group = 'com.guavapay'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '17'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'io.jsonwebtoken:jjwt:0.9.1'
+
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	runtimeOnly 'org.postgresql:postgresql'
+	implementation 'org.liquibase:liquibase-core'
+
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation("org.testcontainers:junit-jupiter:1.17.6")
+	implementation(platform('org.testcontainers:testcontainers-bom:1.17.4'))
+	testImplementation 'org.testcontainers:postgresql:1.17.6'
+	testImplementation 'org.springframework.security:spring-security-test:6.0.2'
+	testImplementation 'commons-io:commons-io:2.11.0'
+
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}

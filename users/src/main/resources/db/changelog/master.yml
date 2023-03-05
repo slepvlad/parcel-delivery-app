@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - include:
+      file: create-tables.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: populate-tables.yaml
+      relativeToChangelogFile: true
