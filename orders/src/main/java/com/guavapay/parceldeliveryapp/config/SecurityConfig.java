@@ -1,17 +1,9 @@
 package com.guavapay.parceldeliveryapp.config;
 
-import com.nimbusds.jose.jwk.JWK;
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.RSAKey;
-import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
-import com.nimbusds.jose.jwk.source.JWKSource;
-import com.nimbusds.jose.proc.SecurityContext;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.ProviderManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,16 +11,18 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
+
+import java.security.KeyFactory;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 
 @Configuration
 @EnableWebSecurity
@@ -44,22 +38,34 @@ public class SecurityConfig {
             "/error"
     };
 
+    private final String publicKey = "-----BEGIN PUBLIC KEY-----\n" +
+            "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxkkB/D393yFYAwnmhvfc\n" +
+            "J0i9U3ybFxNff+kbQdpuPP8UeF3KU0nBGv4O8VgWlCKqbp4+fsUFrlutXd3T2udG\n" +
+            "WmdwrJXZ9vqPU0aKmavfNZCYe4BnIz4rchkg12pMwc64uxaqLuOzV+sSGpdWBoU6\n" +
+            "AJyr5YeU08ddghqVZanFIdC3eETgTJ1LPzRV74wYMRiysqJrAOF4fXFY/k+lYQHu\n" +
+            "M/L0wByiimXF1bXrhJ2u7RGlG9fbhL/Mqrx8CQsVAP+k7SqBFK/Cl6moZjYx+iv9\n" +
+            "/Edsrg3sCiFUfyOm1Q0GnlRyXGzuYr/0ouvCa4b0XvKV6BuHGcunf6Aws97TEDGR\n" +
+            "gwIDAQAB\n" +
+            "-----END PUBLIC KEY-----";
+
+    @Bean
+    @SneakyThrows
+    public RSAPublicKey publicKey() {
+        var publicKeyContent = publicKey
+                .replaceAll("\\n", "")
+                .replace("-----BEGIN PUBLIC KEY-----", "")
+                .replace("-----END PUBLIC KEY-----", "");
+        ;
+
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        X509EncodedKeySpec keySpecX509 = new X509EncodedKeySpec(Base64.getDecoder().decode(publicKeyContent));
+        return (RSAPublicKey) kf.generatePublic(keySpecX509);
+    }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-    private final RsaKeyProperties jwtConfigProperties;
-    private final UserDetailsService userDetailsService;
-
-    @Bean
-    public AuthenticationManager authenticationManager() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
-        return new ProviderManager(authProvider);
-    }
-
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -67,8 +73,6 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/sign-in").permitAll()
-                        .requestMatchers("/api/v1/auth/sign-up-user").permitAll()
                         .requestMatchers(AUTH_WHITELIST).permitAll()
                         .anyRequest().authenticated()
                 )
@@ -78,23 +82,14 @@ public class SecurityConfig {
                         .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
                         .accessDeniedHandler(new BearerTokenAccessDeniedHandler())
                 )
-                .httpBasic(Customizer.withDefaults()) //
+                .httpBasic(Customizer.withDefaults())
                 .build();
     }
 
     @Bean
     JwtDecoder jwtDecoder() {
         return NimbusJwtDecoder
-                .withPublicKey(jwtConfigProperties.publicKey())
+                .withPublicKey(publicKey())
                 .build();
-    }
-
-    @Bean
-    JwtEncoder jwtEncoder() {
-        JWK jwk = new RSAKey.Builder(jwtConfigProperties.publicKey())
-                .privateKey(jwtConfigProperties.privateKey())
-                .build();
-        JWKSource<SecurityContext> jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
-        return new NimbusJwtEncoder(jwks);
     }
 }

@@ -1,6 +1,5 @@
 package com.guavapay.parceldeliveryapp.service;
 
-import com.guavapay.parceldeliveryapp.dto.LoginRequest;
 import com.guavapay.parceldeliveryapp.dto.SignUpRequest;
 import com.guavapay.parceldeliveryapp.dto.TokenDto;
 import com.guavapay.parceldeliveryapp.exception.BadRequestException;
@@ -9,10 +8,7 @@ import com.guavapay.parceldeliveryapp.model.RoleName;
 import com.guavapay.parceldeliveryapp.model.User;
 import com.guavapay.parceldeliveryapp.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -29,8 +25,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleService roleService;
-    private final AuthenticationManager authenticationManager;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final TokenServiceImpl tokenService;
 
 
     @Override
@@ -44,20 +39,15 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public TokenDto signIn(LoginRequest request) {
-        Authentication authentication = authenticationManager
-                .authenticate(
-                        new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-                );
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+    public TokenDto signIn(Authentication authentication) {
 
-        String jwt = jwtTokenProvider.generateToken(authentication);
+        String jwt = tokenService.generateToken(authentication);
 
         return new TokenDto(jwt, TOKEN_TYPE);
     }
 
     private User register(SignUpRequest request, RoleName roleName) {
-        if(userRepository.findByEmail(request.getEmail()).isPresent()) {
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new BadRequestException(format("User with email: [%s] has already exist", request.getEmail()));
         }
 
