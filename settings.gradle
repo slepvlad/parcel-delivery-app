@@ -2,6 +2,8 @@ rootProject.name = 'parcel-delivery-app'
 
 include('users')
 include('orders')
+include('eureka')
+include('gateway')
 
 include('common-lib')
 include('common-lib:common-exception')
