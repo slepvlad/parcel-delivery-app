@@ -1,8 +1,8 @@
 spring:
   application:
-    name: users
+    name: orders
   datasource:
-    url: jdbc:postgresql://${POSTGRES:localhost}:5432/users
+    url: jdbc:postgresql://${POSTGRES:localhost}:5432/orders
     driver-class-name: org.postgresql.Driver
     username: ${POSTGRES_USERNAME:postgres}
     password: ${POSTGRES_PASSWORD:postgres}
@@ -10,16 +10,17 @@ spring:
     change-log: db/changelog/master.yml
   jpa:
     open-in-view: false
+#    show-sql: true
+#    properties:
+#      hibernate:
+#        format_sql: true
 
 server:
-  port: 8081
+  port: 8082
   servlet:
-    context-path: /users
+    context-path: /delivery-order
+
 
 logging:
   level:
-    com.guavapay: trace
-
-rsa:
-  private-key: classpath:certs/private.pem
-  public-key: classpath:certs/public.pem
+    com.guavapay: debug

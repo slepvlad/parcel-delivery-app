@@ -6,11 +6,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class LoginRequest {
+public class UpdateDestinationRequest {
 
     @NotBlank
-    private String email;
-
-    @NotBlank
-    private String password;
+    private String destination;
 }

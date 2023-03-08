@@ -1,0 +1,16 @@
+package com.guavapay.parceldeliveryapp.dto;
+
+import com.guavapay.parceldeliveryapp.model.OrderStatus;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class DeliveryOrderFullDto {
+
+    private Long id;
+    private String destination;
+    private Long itemId;
+    private Long userId;
+    private OrderStatus orderStatus;
+}

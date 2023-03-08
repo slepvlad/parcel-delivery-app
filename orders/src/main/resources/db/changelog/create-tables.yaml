@@ -1,0 +1,44 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-tables
+      author: slepovva@gmail.com
+      changes:
+        - createTable:
+            tableName: delivery_orders
+            columns:
+              - column:
+                  name: id
+                  type: bigserial
+                  autoIncrement: true
+                  startWith: 100
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: request_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: destination
+                  type: varchar(512)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: item_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: order_status
+                  type: varchar(64)
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: delivery_orders
+            columnNames: user_id, request_id
+            constraintName: u_user_request

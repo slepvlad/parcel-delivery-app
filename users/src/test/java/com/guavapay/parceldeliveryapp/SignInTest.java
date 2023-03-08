@@ -13,7 +13,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class SignInTest extends AbstractControllerTest {
 
     private static final String SIGN_IN_URL = "/api/v1/auth/sign-in";
-    private static final String BASE_PATH = "requests/auth/signin/";
 
     @Test
     @DisplayName("[Success] sign in by admin")
@@ -23,7 +22,7 @@ public class SignInTest extends AbstractControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders
                         .post(SIGN_IN_URL)
-                        .content(readFileFromResources(BASE_PATH + "sign-in-admin-success.json"))
+                        .header(AUTH_HEADER, getBasicAuth("admin@gmail.com"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").exists())
@@ -39,7 +38,7 @@ public class SignInTest extends AbstractControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders
                         .post(SIGN_IN_URL)
-                        .content(readFileFromResources(BASE_PATH + "sign-in-user-success.json"))
+                        .header(AUTH_HEADER, getBasicAuth("user@gmail.com"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").exists())
@@ -55,7 +54,7 @@ public class SignInTest extends AbstractControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders
                         .post(SIGN_IN_URL)
-                        .content(readFileFromResources(BASE_PATH + "sign-in-courier-success.json"))
+                        .header(AUTH_HEADER, getBasicAuth("courier@gmail.com"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").exists())
@@ -71,7 +70,7 @@ public class SignInTest extends AbstractControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders
                         .post(SIGN_IN_URL)
-                        .content(readFileFromResources(BASE_PATH + "sign-in-admin-password-fail.json"))
+                        .header(AUTH_HEADER, getBasicAuth("admin@gmail.com", "blabla"))
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.accessToken").doesNotExist())
@@ -87,41 +86,10 @@ public class SignInTest extends AbstractControllerTest {
 
         mockMvc.perform(MockMvcRequestBuilders
                         .post(SIGN_IN_URL)
-                        .content(readFileFromResources(BASE_PATH + "sign-in-admin-email-fail.json"))
+                        .header(AUTH_HEADER, getBasicAuth("admin!@gmail.com"))
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.title").value("Not Found"))
-                .andExpect(jsonPath("$.status").value(404))
-                .andExpect(jsonPath("$.detail").value("User with email: [admin!@gmail.com] not found"))
-                .andExpect(jsonPath("$.instance").value("/api/v1/auth/sign-in"))
+                .andExpect(status().isUnauthorized())
                 .andDo(MockMvcResultHandlers.print());
     }
 
-    @Test
-    @DisplayName("[Fail] bad request sign in by admin Wrong email")
-    public void badRequestSignInWrongEmailTest() throws Exception {
-
-        createUser("admin@gmail.com", RoleName.ROLE_ADMIN);
-
-        mockMvc.perform(MockMvcRequestBuilders
-                        .post(SIGN_IN_URL)
-                        .content(readFileFromResources(BASE_PATH + "sign-in-admin-email-bad-request.json"))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andDo(MockMvcResultHandlers.print());
-    }
-
-    @Test
-    @DisplayName("[Fail] bad request sign in by admin Wrong password")
-    public void badRequestSignInWrongPasswordTest() throws Exception {
-
-        createUser("admin@gmail.com", RoleName.ROLE_ADMIN);
-
-        mockMvc.perform(MockMvcRequestBuilders
-                        .post(SIGN_IN_URL)
-                        .content(readFileFromResources(BASE_PATH + "sign-in-admin-password-bad-request.json"))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andDo(MockMvcResultHandlers.print());
-    }
 }

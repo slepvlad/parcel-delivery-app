@@ -5,7 +5,7 @@ import com.guavapay.parceldeliveryapp.model.RoleName;
 import com.guavapay.parceldeliveryapp.model.User;
 import com.guavapay.parceldeliveryapp.repository.RoleRepository;
 import com.guavapay.parceldeliveryapp.repository.UserRepository;
-import com.guavapay.parceldeliveryapp.service.JwtTokenProvider;
+import com.guavapay.parceldeliveryapp.service.TokenService;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -24,6 +24,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.Set;
 
 @SpringBootTest
@@ -32,6 +33,8 @@ public abstract class AbstractControllerTest {
 
     protected final String AUTH_HEADER = "Authorization";
     protected final String TOKEN_TYPE = "Bearer ";
+    protected final String BASIC_PREFIX = "Basic ";
+    protected final String DEFAULT_PASSWORD = "P@ssw0rd";
 
     @Autowired
     protected MockMvc mockMvc;
@@ -43,7 +46,7 @@ public abstract class AbstractControllerTest {
     private static PostgreSQLContainer<?> postgres;
 
     @Autowired
-    protected JwtTokenProvider jwtTokenProvider;
+    protected TokenService tokenService;
 
     @Autowired
     protected AuthenticationManager authenticationManager;
@@ -62,7 +65,7 @@ public abstract class AbstractControllerTest {
     }
 
     @BeforeEach
-    public void cleanDbFromLiquibase(){
+    public void cleanDbFromLiquibase() {
         userRepository.deleteAll();
     }
 
@@ -92,7 +95,15 @@ public abstract class AbstractControllerTest {
         Authentication authentication = getAuthentication();
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        return TOKEN_TYPE + jwtTokenProvider.generateToken(authentication);
+        return TOKEN_TYPE + tokenService.generateToken(authentication);
+    }
+
+    protected String getBasicAuth(String userName){
+        return getBasicAuth(userName, DEFAULT_PASSWORD);
+    }
+    protected String getBasicAuth(String userName, String password) {
+        return BASIC_PREFIX + Base64.getEncoder()
+                .encodeToString((userName + ":" + password).getBytes());
     }
 
     protected Authentication getAuthentication() {
