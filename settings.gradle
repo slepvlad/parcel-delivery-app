@@ -4,6 +4,7 @@ include('users')
 include('orders')
 include('eureka')
 include('gateway')
+include('delivery-tasks')
 
 include('common-lib')
 include('common-lib:common-exception')

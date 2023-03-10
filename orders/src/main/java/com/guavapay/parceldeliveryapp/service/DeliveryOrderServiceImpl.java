@@ -1,34 +1,38 @@
 package com.guavapay.parceldeliveryapp.service;
 
-import com.guavapay.parceldeliveryapp.dto.CreateDeliveryOrderRequest;
-import com.guavapay.parceldeliveryapp.dto.DeliveryOrderDto;
-import com.guavapay.parceldeliveryapp.dto.DeliveryOrderFullDto;
-import com.guavapay.parceldeliveryapp.dto.UpdateStatusRequest;
+import com.guavapay.parceldeliveryapp.client.DeliveryTaskClient;
+import com.guavapay.parceldeliveryapp.client.dto.AssignedOrderDto;
+import com.guavapay.parceldeliveryapp.dto.*;
 import com.guavapay.parceldeliveryapp.exception.BadRequestException;
 import com.guavapay.parceldeliveryapp.exception.NotFoundException;
 import com.guavapay.parceldeliveryapp.mapper.DeliveryOrderMapper;
 import com.guavapay.parceldeliveryapp.model.DeliveryOrder;
 import com.guavapay.parceldeliveryapp.model.OrderStatus;
-import com.guavapay.parceldeliveryapp.dto.UpdateDestinationRequest;
 import com.guavapay.parceldeliveryapp.repository.DeliveryOrderRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 
+import static com.guavapay.parceldeliveryapp.utils.SecurityUtils.getUserId;
 import static java.lang.String.format;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DeliveryOrderServiceImpl implements DeliveryOrderService {
 
     private final DeliveryOrderRepository deliveryOrderRepository;
     private final DeliveryOrderMapper deliveryOrderMapper;
+    private final DeliveryTaskClient deliveryTaskClient;
+    private final RabbitTemplate rabbitTemplate;
 
     @Override
     @Transactional
@@ -59,9 +63,17 @@ public class DeliveryOrderServiceImpl implements DeliveryOrderService {
     public void cancel(Long orderId, Authentication authentication) {
         Long userId = getUserId(authentication);
         var order = findByOrderIdAndUserId(orderId, userId);
-        //ToDo check current status
+        if(!OrderStatus.cancelable().contains(order.getOrderStatus())){
+            throw new BadRequestException(
+                    format("Order with status: [%s] can't be cancelled", order.getOrderStatus().name()));
+        }
         order.setOrderStatus(OrderStatus.CANCELED);
         deliveryOrderRepository.save(order);
+        rabbitTemplate
+                .convertAndSend(
+                        "delivery-order-event",
+                        new DeliveryOrderEvent(orderId, "CANCELED")
+                );
     }
 
     @Override
@@ -77,17 +89,23 @@ public class DeliveryOrderServiceImpl implements DeliveryOrderService {
     public void updateDestination(Long orderId, Authentication authentication, UpdateDestinationRequest request) {
         Long userId = getUserId(authentication);
         var order = findByOrderIdAndUserId(orderId, userId);
-        //ToDo check status
 
+        if(!OrderStatus.updatable().contains(order.getOrderStatus())){
+            throw new BadRequestException(
+                    format("Order with status: [%s] can't be updated", order.getOrderStatus().name()));
+        }
         order.setDestination(request.getDestination());
         deliveryOrderRepository.save(order);
+        rabbitTemplate.convertAndSend("delivery-order-event",
+                new DeliveryOrderEvent(orderId, "UPDATE_DESTINATION")
+        );
     }
 
     @Override
     @Transactional
     public void updateOrderStatus(Long orderId, UpdateStatusRequest request) {
         var order = deliveryOrderRepository.findById(orderId)
-                .orElseThrow(()-> new NotFoundException(format("Not found order with orderId:[%s]", orderId)));
+                .orElseThrow(() -> new NotFoundException(format("Not found order with orderId:[%s]", orderId)));
 
         order.setOrderStatus(request.getStatus());
         deliveryOrderRepository.save(order);
@@ -99,10 +117,31 @@ public class DeliveryOrderServiceImpl implements DeliveryOrderService {
                 .map(deliveryOrderMapper::toDeliveryOrderFullDto);
     }
 
-    private Long getUserId(Authentication authentication) {
-        Object credentials = authentication.getCredentials();
-        Jwt jwt = (Jwt) authentication.getCredentials();
-        return (Long) jwt.getClaims().get("userId");
+    @Override
+    public List<DeliveryOrderDto> findAllByCourier() {
+        var orderIds = deliveryTaskClient.findAllAssigned().stream()
+                .map(AssignedOrderDto::getOrderId)
+                .toList();
+
+        if (orderIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return deliveryOrderRepository.findAllByIdIn(orderIds).stream()
+                .map(deliveryOrderMapper::toDeliveryOrderDto)
+                .toList();
+    }
+
+    @Override
+    public void changeStatus(Long deliveryOrderId, OrderStatus orderStatus) {
+        deliveryOrderRepository.findById(deliveryOrderId)
+                .ifPresentOrElse(
+                        order -> {
+                            order.setOrderStatus(orderStatus);
+                            deliveryOrderRepository.save(order);
+                        },
+                        () -> log.error("Not found delivery order with id: {}", deliveryOrderId)
+                );
     }
 
     private DeliveryOrder findByOrderIdAndUserId(Long orderId, Long userId) {
