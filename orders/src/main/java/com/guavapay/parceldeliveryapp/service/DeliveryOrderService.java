@@ -1,13 +1,9 @@
 package com.guavapay.parceldeliveryapp.service;
 
-import com.guavapay.parceldeliveryapp.dto.CreateDeliveryOrderRequest;
-import com.guavapay.parceldeliveryapp.dto.DeliveryOrderDto;
-import com.guavapay.parceldeliveryapp.dto.DeliveryOrderFullDto;
-import com.guavapay.parceldeliveryapp.dto.UpdateStatusRequest;
-import com.guavapay.parceldeliveryapp.dto.UpdateDestinationRequest;
+import com.guavapay.parceldeliveryapp.dto.*;
 import com.guavapay.parceldeliveryapp.model.OrderStatus;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 
 import java.util.List;
@@ -24,7 +20,7 @@ public interface DeliveryOrderService {
 
     void updateOrderStatus(Long orderId, UpdateStatusRequest request);
 
-    Page<DeliveryOrderFullDto> findAll(PageRequest pageRequest);
+    Page<DeliveryOrderFullDto> findAll(Pageable pageable);
 
     List<DeliveryOrderDto> findAllByCourier();
 

@@ -15,6 +15,10 @@ repositories {
 
 ext {
 	set('springCloudVersion', "2022.0.1")
+	openApiVersion = '2.0.2'
+	testContainersVersion = '1.17.6'
+	springSecurityTestVersion = '6.0.2'
+	commonIoVersion = '2.11.0'
 }
 
 dependencies {
@@ -33,14 +37,14 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2'
+	implementation "org.springdoc:springdoc-openapi-starter-webmvc-api:${openApiVersion}"
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation("org.testcontainers:junit-jupiter:1.17.6")
-	implementation(platform('org.testcontainers:testcontainers-bom:1.17.4'))
-	testImplementation 'org.testcontainers:postgresql:1.17.6'
-	testImplementation 'org.springframework.security:spring-security-test:6.0.2'
-	testImplementation 'commons-io:commons-io:2.11.0'
+	testImplementation("org.testcontainers:junit-jupiter:${testContainersVersion}")
+	implementation(platform("org.testcontainers:testcontainers-bom:${testContainersVersion}"))
+	testImplementation "org.testcontainers:postgresql:${testContainersVersion}"
+	testImplementation "org.springframework.security:spring-security-test:${springSecurityTestVersion}"
+	testImplementation "commons-io:commons-io:${commonIoVersion}"
 
 }
 
