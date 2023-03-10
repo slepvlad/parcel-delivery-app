@@ -2,6 +2,7 @@ package com.guavapay.parceldeliveryapp.controller;
 
 import com.guavapay.parceldeliveryapp.config.RsaKeyProperties;
 import com.guavapay.parceldeliveryapp.dto.StringWrapper;
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,6 +13,7 @@ import java.util.Base64;
 @RestController
 @RequestMapping("api/v1/public-key")
 @RequiredArgsConstructor
+@Hidden
 public class PublicKeyController {
 
     private final RsaKeyProperties jwtConfigProperties;

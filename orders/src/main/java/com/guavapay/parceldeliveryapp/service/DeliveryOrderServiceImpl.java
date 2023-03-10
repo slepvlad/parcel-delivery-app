@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,7 +63,7 @@ public class DeliveryOrderServiceImpl implements DeliveryOrderService {
     public void cancel(Long orderId, Authentication authentication) {
         Long userId = getUserId(authentication);
         var order = findByOrderIdAndUserId(orderId, userId);
-        if(!OrderStatus.cancelable().contains(order.getOrderStatus())){
+        if (!OrderStatus.cancelable().contains(order.getOrderStatus())) {
             throw new BadRequestException(
                     format("Order with status: [%s] can't be cancelled", order.getOrderStatus().name()));
         }
@@ -90,7 +90,7 @@ public class DeliveryOrderServiceImpl implements DeliveryOrderService {
         Long userId = getUserId(authentication);
         var order = findByOrderIdAndUserId(orderId, userId);
 
-        if(!OrderStatus.updatable().contains(order.getOrderStatus())){
+        if (!OrderStatus.updatable().contains(order.getOrderStatus())) {
             throw new BadRequestException(
                     format("Order with status: [%s] can't be updated", order.getOrderStatus().name()));
         }
@@ -112,8 +112,8 @@ public class DeliveryOrderServiceImpl implements DeliveryOrderService {
     }
 
     @Override
-    public Page<DeliveryOrderFullDto> findAll(PageRequest pageRequest) {
-        return deliveryOrderRepository.findAll(pageRequest)
+    public Page<DeliveryOrderFullDto> findAll(Pageable pageable) {
+        return deliveryOrderRepository.findAll(pageable)
                 .map(deliveryOrderMapper::toDeliveryOrderFullDto);
     }
 

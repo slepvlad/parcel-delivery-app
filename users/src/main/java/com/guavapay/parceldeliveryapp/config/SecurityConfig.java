@@ -30,19 +30,13 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthen
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
 
+import static org.springframework.http.HttpMethod.OPTIONS;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
-    private static final String[] AUTH_WHITELIST = {
-            "/webjars/swagger-ui/**",
-            "/favicon.ico",
-            "/swagger-ui/index.htm",
-            "/v3/api-docs",
-            "/error"
-    };
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -70,7 +64,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/sign-in").permitAll()
                         .requestMatchers("/api/v1/auth/sign-up-user").permitAll()
                         .requestMatchers("/api/v1/public-key").permitAll()
-                        .requestMatchers(AUTH_WHITELIST).permitAll()
+                        .requestMatchers("/v3/api-docs").permitAll()
+                        .requestMatchers(OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

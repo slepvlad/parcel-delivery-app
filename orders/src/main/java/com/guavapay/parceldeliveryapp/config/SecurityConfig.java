@@ -8,6 +8,11 @@ import lombok.SneakyThrows;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.retry.annotation.Retryable;
+import org.springframework.retry.stats.DefaultStatisticsRepository;
+import org.springframework.retry.stats.StatisticsListener;
+import org.springframework.retry.support.RetryTemplate;
+import org.springframework.retry.support.RetryTemplateBuilder;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,7 +27,9 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.client.HttpServerErrorException;
 
+import java.net.ConnectException;
 import java.net.URI;
 import java.security.KeyFactory;
 import java.security.interfaces.RSAPublicKey;
@@ -31,6 +38,7 @@ import java.util.Base64;
 import java.util.Objects;
 
 import static java.lang.String.format;
+import static org.springframework.http.HttpMethod.OPTIONS;
 
 @Configuration
 @EnableWebSecurity
@@ -39,11 +47,7 @@ import static java.lang.String.format;
 public class SecurityConfig {
 
     private static final String[] AUTH_WHITELIST = {
-            "/webjars/swagger-ui/**",
-            "/favicon.ico",
-            "/swagger-ui/index.htm",
-            "/v3/api-docs",
-            "/error"
+            "/v3/api-docs"
     };
     private final RestTemplateBuilder builder;
     private final EurekaClient eurekaClient;
@@ -51,6 +55,7 @@ public class SecurityConfig {
 
     @Bean
     @SneakyThrows
+    @Retryable
     public RSAPublicKey publicKey() {
 
         var publicKeyContent = publicKeyString();
@@ -81,6 +86,7 @@ public class SecurityConfig {
                 .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(AUTH_WHITELIST).permitAll()
+                        .requestMatchers(OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
