@@ -1,7 +1,11 @@
 package com.guavapay.parceldeliveryapp.config;
 
+import com.netflix.discovery.EurekaClient;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.SneakyThrows;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -19,10 +23,14 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthen
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
 
+import java.net.URI;
 import java.security.KeyFactory;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
+import java.util.Objects;
+
+import static java.lang.String.format;
 
 @Configuration
 @EnableWebSecurity
@@ -37,29 +45,28 @@ public class SecurityConfig {
             "/v3/api-docs",
             "/error"
     };
-
-    private final String publicKey = "-----BEGIN PUBLIC KEY-----\n" +
-            "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxkkB/D393yFYAwnmhvfc\n" +
-            "J0i9U3ybFxNff+kbQdpuPP8UeF3KU0nBGv4O8VgWlCKqbp4+fsUFrlutXd3T2udG\n" +
-            "WmdwrJXZ9vqPU0aKmavfNZCYe4BnIz4rchkg12pMwc64uxaqLuOzV+sSGpdWBoU6\n" +
-            "AJyr5YeU08ddghqVZanFIdC3eETgTJ1LPzRV74wYMRiysqJrAOF4fXFY/k+lYQHu\n" +
-            "M/L0wByiimXF1bXrhJ2u7RGlG9fbhL/Mqrx8CQsVAP+k7SqBFK/Cl6moZjYx+iv9\n" +
-            "/Edsrg3sCiFUfyOm1Q0GnlRyXGzuYr/0ouvCa4b0XvKV6BuHGcunf6Aws97TEDGR\n" +
-            "gwIDAQAB\n" +
-            "-----END PUBLIC KEY-----";
+    private final RestTemplateBuilder builder;
+    private final EurekaClient eurekaClient;
+    private static final String PUBLIC_KEY_URL = "users/api/v1/public-key";
 
     @Bean
     @SneakyThrows
     public RSAPublicKey publicKey() {
-        var publicKeyContent = publicKey
-                .replaceAll("\\n", "")
-                .replace("-----BEGIN PUBLIC KEY-----", "")
-                .replace("-----END PUBLIC KEY-----", "");
-        ;
 
+        var publicKeyContent = publicKeyString();
         KeyFactory kf = KeyFactory.getInstance("RSA");
         X509EncodedKeySpec keySpecX509 = new X509EncodedKeySpec(Base64.getDecoder().decode(publicKeyContent));
         return (RSAPublicKey) kf.generatePublic(keySpecX509);
+    }
+    public String publicKeyString(){
+        var info = eurekaClient.getApplication("users")
+                .getInstances()
+                .get(0);
+         var restTemplate = builder.build();
+         return Objects.requireNonNull(
+                 restTemplate.getForObject(
+                         URI.create(info.getHomePageUrl() + PUBLIC_KEY_URL), PublicKeyDto.class)).
+                 getValue();
     }
 
     @Bean
@@ -91,5 +98,11 @@ public class SecurityConfig {
         return NimbusJwtDecoder
                 .withPublicKey(publicKey())
                 .build();
+    }
+
+    @Getter
+    @Setter
+    public static class PublicKeyDto{
+        private String value;
     }
 }

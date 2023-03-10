@@ -13,4 +13,5 @@ public interface DeliveryOrderRepository extends JpaRepository<DeliveryOrder, Lo
     Optional<DeliveryOrder> findByIdAndUserId(Long orderId, Long userId);
 
     List<DeliveryOrder> findAllByUserId(Long userId);
+    List<DeliveryOrder> findAllByIdIn(List<Long> isd);
 }

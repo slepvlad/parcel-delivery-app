@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: delivery-tasks
+  rabbitmq:
+    host: ${RABBITMQ:localhost}
+    port: 5672
+    username: user
+    password: password
+  datasource:
+    url: jdbc:postgresql://${POSTGRES:localhost}:5432/delivery_tasks
+    driver-class-name: org.postgresql.Driver
+    username: ${POSTGRES_USERNAME:postgres}
+    password: ${POSTGRES_PASSWORD:postgres}
+  liquibase:
+    change-log: db/changelog/master.yml
+  jpa:
+    open-in-view: false
+
+server:
+  port: 8083
+  servlet:
+    context-path: /delivery-tasks
+
+
+logging:
+  level:
+    com.guavapay: debug
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}

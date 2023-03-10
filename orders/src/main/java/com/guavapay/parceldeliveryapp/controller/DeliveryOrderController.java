@@ -71,5 +71,9 @@ public class DeliveryOrderController {
         return deliveryOrderService.findAll(pageRequest);
     }
 
-    //ToDo create method find by id for courier
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_COURIER')")
+    @GetMapping("/courier")
+    public List<DeliveryOrderDto> findAllByCourier() {
+        return deliveryOrderService.findAllByCourier();
+    }
 }

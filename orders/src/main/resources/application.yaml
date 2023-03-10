@@ -1,6 +1,11 @@
 spring:
   application:
     name: orders
+  rabbitmq:
+    host: ${RABBITMQ:localhost}
+    port: 5672
+    username: user
+    password: password
   datasource:
     url: jdbc:postgresql://${POSTGRES:localhost}:5432/orders
     driver-class-name: org.postgresql.Driver

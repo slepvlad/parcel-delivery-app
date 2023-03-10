@@ -1,0 +1,80 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-tables
+      author: slepovva@gmail.com
+      changes:
+        - createTable:
+            tableName: delivery_tasks
+            columns:
+              - column:
+                  name: id
+                  type: bigserial
+                  autoIncrement: true
+                  startWith: 100
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: courier_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: order_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_date
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_modified_date
+                  type: timestamp
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(64)
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: delivery_tasks
+            columnNames: courier_id, order_id
+            constraintName: u_courier_order
+        - createTable:
+            tableName: locations
+            columns:
+              - column:
+                  name: id
+                  type: bigserial
+                  autoIncrement: true
+                  startWith: 100
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: delivery_task_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: latitude
+                  type: varchar(128)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: longitude
+                  type: varchar(128)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_date
+                  type: timestamp
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseColumnNames: delivery_task_id
+            baseTableName: locations
+            constraintName: fk_locations_delivery_task
+            referencedColumnNames: id
+            referencedTableName: delivery_tasks
