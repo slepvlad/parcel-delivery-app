@@ -65,6 +65,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/sign-up-user").permitAll()
                         .requestMatchers("/api/v1/public-key").permitAll()
                         .requestMatchers("/v3/api-docs").permitAll()
+                        .requestMatchers("/actuator/info").permitAll()
                         .requestMatchers(OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated()
                 )

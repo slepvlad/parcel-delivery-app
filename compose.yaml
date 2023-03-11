@@ -14,6 +14,8 @@ services:
       - ./docker_postgres_init.sql:/docker-entrypoint-initdb.d/docker_postgres_init.sql
     ports:
       - "5432:5432"
+    networks:
+      - net
     restart: unless-stopped
 
   rabbitmq3:
@@ -23,6 +25,8 @@ services:
     environment:
       - RABBITMQ_DEFAULT_USER=user
       - RABBITMQ_DEFAULT_PASS=password
+    networks:
+      - net
     ports:
       - '5672:5672'
       - '15672:15672'
@@ -30,8 +34,107 @@ services:
       - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
       - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
 
+  eureka:
+    container_name: eureka_container
+    restart: always
+    build:
+      context: ./eureka
+      dockerfile: Dockerfile
+    ports:
+      - '8761:8761'
+    networks:
+      - net
+    hostname: eureka
+
+  users:
+    container_name: users_container
+    restart: always
+    build:
+      context: ./users
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES: postgres
+      EUREKA_URI: eureka
+    depends_on:
+      - eureka
+      - postgres
+    links:
+      - postgres
+      - eureka
+    networks:
+      - net
+    ports:
+      - '8081:8081'
+
+  orders:
+    container_name: orders_container
+    restart: always
+    build:
+      context: ./orders
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES: postgres
+      EUREKA_URI: eureka
+      RABBITMQ: rabbitmq3
+    depends_on:
+      - eureka
+      - postgres
+      - users
+      - rabbitmq3
+    links:
+      - users
+      - postgres
+      - eureka
+      - rabbitmq3
+    networks:
+      - net
+    ports:
+      - '8082:8082'
+  delivery-tasks:
+    container_name: delivery_tasks_container
+    restart: always
+    build:
+      context: ./delivery-tasks
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES: postgres
+      EUREKA_URI: eureka
+      RABBITMQ: rabbitmq3
+    depends_on:
+      - eureka
+      - postgres
+      - users
+      - rabbitmq3
+    links:
+      - users
+      - postgres
+      - eureka
+      - rabbitmq3
+    networks:
+      - net
+    ports:
+      - '8083:8083'
+
+  gateway:
+    container_name: gateway_container
+    restart: always
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    environment:
+      EUREKA_URI: eureka
+    links:
+      - eureka
+    depends_on:
+      - eureka
+    networks:
+      - net
+    ports:
+      - '8888:8888'
+
+
 networks:
-  spring-postgres:
+  net:
 
 volumes:
   postgres:
