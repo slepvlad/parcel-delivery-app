@@ -118,7 +118,7 @@ public class DeliveryOrderServiceImpl implements DeliveryOrderService {
     }
 
     @Override
-    public List<DeliveryOrderDto> findAllByCourier() {
+    public List<DeliveryOrderFullDto> findAllByCourier() {
         var orderIds = deliveryTaskClient.findAllAssigned().stream()
                 .map(AssignedOrderDto::getOrderId)
                 .toList();
@@ -128,7 +128,7 @@ public class DeliveryOrderServiceImpl implements DeliveryOrderService {
         }
 
         return deliveryOrderRepository.findAllByIdIn(orderIds).stream()
-                .map(deliveryOrderMapper::toDeliveryOrderDto)
+                .map(deliveryOrderMapper::toDeliveryOrderFullDto)
                 .toList();
     }
 

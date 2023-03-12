@@ -15,6 +15,7 @@ public interface LocationMapper {
             @Mapping(target = "latitude", source = "request.latitude"),
             @Mapping(target = "longitude", source = "request.longitude"),
             @Mapping(target = "deliveryTask", source = "deliveryTask"),
+            @Mapping(target = "id", ignore = true)
     })
     Location toLocation(CreateLocationRequest request, DeliveryTask deliveryTask);
 }

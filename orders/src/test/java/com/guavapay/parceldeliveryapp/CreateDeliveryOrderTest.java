@@ -2,9 +2,10 @@ package com.guavapay.parceldeliveryapp;
 
 import com.guavapay.parceldeliveryapp.dto.LongIdWrapper;
 import com.guavapay.parceldeliveryapp.model.OrderStatus;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,9 +24,8 @@ public class CreateDeliveryOrderTest extends AbstractControllerTest {
     private static final String BASE_PATH = "requests/create/";
 
     @Test
-    @DisplayName("[Success] create delivery order")
-    @Disabled
-    public void getAllOrdersTest() throws Exception {
+    @DisplayName("[Success] create delivery order by user")
+    public void createDeliveryOrdersTest() throws Exception {
 
         authentication(1L, "ROLE_USER");
 
@@ -54,6 +54,63 @@ public class CreateDeliveryOrderTest extends AbstractControllerTest {
         assertEquals("Some destination", order.get().getDestination());
         assertEquals(100L, order.get().getItemId());
         assertEquals(OrderStatus.NEW, order.get().getOrderStatus());
+    }
+
+    @Test
+    @DisplayName("[Fail] Create delivery order by user. RequestId is null")
+    public void createDeliveryOrdersNullRequestIdTest() throws Exception {
+
+        authentication(1L, "ROLE_USER");
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .post(CREATE_ORDER_URL)
+                        .content(readFileFromResources(BASE_PATH + "fail-create-delivery-order-null-request-id.json"))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("[Fail] Create delivery order by user. Empty destination")
+    public void createDeliveryOrdersEmptyDestinationTest() throws Exception {
+
+        authentication(1L, "ROLE_USER");
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .post(CREATE_ORDER_URL)
+                        .content(readFileFromResources(BASE_PATH + "fail-create-delivery-order-null-destination.json"))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("[Fail] Create delivery order by user. OrderId is null")
+    public void createDeliveryOrdersNullOrderIdTest() throws Exception {
+
+        authentication(1L, "ROLE_USER");
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .post(CREATE_ORDER_URL)
+                        .content(readFileFromResources(BASE_PATH + "fail-create-delivery-order-null-order-id.json"))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andDo(print());
+    }
+
+    @ParameterizedTest
+    @DisplayName("[Fail] Create delivery order by not user.")
+    @ValueSource(strings = {"ROLE_ADMIN", "ROLE_COURIER"})
+    public void createDeliveryOrdersTest(String roleName) throws Exception {
+
+        authentication(1L, roleName);
+
+        mockMvc.perform(MockMvcRequestBuilders
+                        .post(CREATE_ORDER_URL)
+                        .content(readFileFromResources(BASE_PATH + "success-create-delivery-order.json"))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden())
+                .andDo(print());
     }
 
 }

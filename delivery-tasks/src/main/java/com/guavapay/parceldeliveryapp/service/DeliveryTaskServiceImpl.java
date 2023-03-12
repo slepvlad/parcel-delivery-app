@@ -1,16 +1,16 @@
 package com.guavapay.parceldeliveryapp.service;
 
-import com.guavapay.parceldeliveryapp.dto.CreateDeliveryTaskRequest;
-import com.guavapay.parceldeliveryapp.dto.DeliveryTaskEvent;
-import com.guavapay.parceldeliveryapp.dto.DeliveryTaskShortDto;
-import com.guavapay.parceldeliveryapp.dto.LongIdWrapper;
+import com.guavapay.parceldeliveryapp.dto.*;
 import com.guavapay.parceldeliveryapp.exception.BadRequestException;
+import com.guavapay.parceldeliveryapp.exception.NotFoundException;
 import com.guavapay.parceldeliveryapp.mapper.DeliveryTaskMapper;
 import com.guavapay.parceldeliveryapp.model.DeliveryTaskStatus;
 import com.guavapay.parceldeliveryapp.repository.DeliveryTaskRepository;
+import jakarta.persistence.NamedEntityGraph;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -109,5 +109,12 @@ public class DeliveryTaskServiceImpl implements DeliveryTaskService {
                             deliveryTaskRepository.save(deliveryTask);
                         },
                         () -> log.warn("Not found delivery task with orderId:{} for updating destination", deliveryOrderId));
+    }
+
+    @Override
+    public DeliveryTaskFullDto getDeliveryTaskFullInfo(Long deliveryTaskId) {
+        return deliveryTaskRepository.findByIdFull(deliveryTaskId)
+                .map(deliveryTaskMapper::toDeliveryTaskFullDto)
+                .orElseThrow(()-> new NotFoundException(format("Delivery task with id:[%d] not found", deliveryTaskId)));
     }
 }

@@ -1,8 +1,10 @@
 package com.guavapay.parceldeliveryapp;
 
-import com.guavapay.parceldeliveryapp.model.DeliveryOrder;
-import com.guavapay.parceldeliveryapp.model.OrderStatus;
-import com.guavapay.parceldeliveryapp.repository.DeliveryOrderRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.guavapay.parceldeliveryapp.model.DeliveryTask;
+import com.guavapay.parceldeliveryapp.model.DeliveryTaskStatus;
+import com.guavapay.parceldeliveryapp.repository.DeliveryTaskRepository;
+import com.guavapay.parceldeliveryapp.repository.LocationRepository;
 import com.netflix.discovery.EurekaClient;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -40,7 +42,9 @@ public abstract class AbstractControllerTest {
     @Autowired
     protected MockMvc mockMvc;
     @Autowired
-    protected DeliveryOrderRepository deliveryOrderRepository;
+    protected DeliveryTaskRepository deliveryTaskRepository;
+    @Autowired
+    protected LocationRepository locationRepository;
 
     private static PostgreSQLContainer<?> postgres;
 
@@ -50,6 +54,8 @@ public abstract class AbstractControllerTest {
     protected JwtDecoder jwtDecoder;
     @MockBean
     protected RabbitTemplate rabbitTemplate;
+
+    protected final ObjectMapper mapper = new ObjectMapper();
 
     @BeforeAll
     static void init() {
@@ -66,19 +72,11 @@ public abstract class AbstractControllerTest {
 
     @AfterEach
     public void cleanDb() {
-        deliveryOrderRepository.deleteAll();
+        locationRepository.deleteAll();
+        deliveryTaskRepository.deleteAll();
         SecurityContextHolder.clearContext();
     }
 
-    protected DeliveryOrder createDeliveryOrder(Long userId, OrderStatus status) {
-        var deliveryOrder = new DeliveryOrder();
-        deliveryOrder.setUserId(userId);
-        deliveryOrder.setRequestId(UUID.randomUUID());
-        deliveryOrder.setDestination("Some test destination");
-        deliveryOrder.setOrderStatus(status);
-        deliveryOrder.setItemId(100L);
-        return deliveryOrderRepository.save(deliveryOrder);
-    }
 
     protected void authentication(Long userId, String role) {
         Collection<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("SCOPE_" + role));
@@ -117,6 +115,18 @@ public abstract class AbstractControllerTest {
         ClassLoader classLoader = getClass().getClassLoader();
         File file = new File(classLoader.getResource(fileName).getFile());
         return FileUtils.readFileToString(file, "UTF-8");
+    }
+
+    protected DeliveryTask createDeliveryTask() {
+        return createDeliveryTask(DeliveryTaskStatus.ASSIGNED);
+    }
+
+    protected DeliveryTask createDeliveryTask(DeliveryTaskStatus status) {
+        var deliveryTask = new DeliveryTask();
+        deliveryTask.setCourierId(1L);
+        deliveryTask.setStatus(status);
+        deliveryTask.setOrderId(200L);
+        return deliveryTaskRepository.save(deliveryTask);
     }
 
 }

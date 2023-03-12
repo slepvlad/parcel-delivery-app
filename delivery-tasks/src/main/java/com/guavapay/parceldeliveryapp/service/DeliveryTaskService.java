@@ -1,6 +1,7 @@
 package com.guavapay.parceldeliveryapp.service;
 
 import com.guavapay.parceldeliveryapp.dto.CreateDeliveryTaskRequest;
+import com.guavapay.parceldeliveryapp.dto.DeliveryTaskFullDto;
 import com.guavapay.parceldeliveryapp.dto.DeliveryTaskShortDto;
 import com.guavapay.parceldeliveryapp.dto.LongIdWrapper;
 import com.guavapay.parceldeliveryapp.model.DeliveryTaskStatus;
@@ -18,4 +19,6 @@ public interface DeliveryTaskService {
     void cancelDelivery(Long deliveryOrderId);
 
     void updateDestination(Long orderId);
+
+    DeliveryTaskFullDto getDeliveryTaskFullInfo(Long deliveryTaskId);
 }

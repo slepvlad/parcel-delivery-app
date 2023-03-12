@@ -22,7 +22,7 @@ public interface DeliveryOrderService {
 
     Page<DeliveryOrderFullDto> findAll(Pageable pageable);
 
-    List<DeliveryOrderDto> findAllByCourier();
+    List<DeliveryOrderFullDto> findAllByCourier();
 
     void changeStatus(Long deliveryOrderId, OrderStatus orderStatus);
 }
