@@ -16,6 +16,10 @@ import java.util.List;
 @Entity
 @Table(name = "delivery_tasks")
 @EntityListeners(AuditingEntityListener.class)
+@NamedEntityGraph(name = "fullEntity",
+        attributeNodes = {
+                @NamedAttributeNode("locations")
+        })
 public class DeliveryTask {
 
     @Id

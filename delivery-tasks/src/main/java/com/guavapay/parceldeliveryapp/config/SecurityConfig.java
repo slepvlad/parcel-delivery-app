@@ -42,7 +42,6 @@ public class SecurityConfig {
     private final EurekaClient eurekaClient;
     private static final String PUBLIC_KEY_URL = "users/api/v1/public-key";
 
-    @Bean
     @SneakyThrows
     public RSAPublicKey publicKey() {
 
