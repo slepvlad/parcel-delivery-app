@@ -17,12 +17,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class FindAllByUserTest extends AbstractControllerTest {
+public class FindAllByAdminTest extends AbstractControllerTest {
 
-    private final static String FIND_ALL_BY_USER_URL = "/api/v1/delivery-orders/user";
+    private final static String FIND_ALL_BY_ADMIN_URL = "/api/v1/delivery-orders";
 
     @Test
-    @DisplayName("[Success] get all orders by user")
+    @DisplayName("[Success] get all orders by admin")
     public void getAllOrdersTest() throws Exception {
 
         var requestId1 = UUID.randomUUID();
@@ -44,41 +44,49 @@ public class FindAllByUserTest extends AbstractControllerTest {
 
         deliveryOrderRepository.saveAll(List.of(order1, order2));
 
-        authentication(1L, "ROLE_USER");
+        authentication(1L, "ROLE_ADMIN");
 
         mockMvc.perform(MockMvcRequestBuilders
-                        .get(FIND_ALL_BY_USER_URL)
+                        .get(FIND_ALL_BY_ADMIN_URL)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id").exists())
-                .andExpect(jsonPath("$[0].destination").value("Destination 1"))
-                .andExpect(jsonPath("$[0].itemId").value(100))
-                .andExpect(jsonPath("$[0].orderStatus").value("DELIVERED"))
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content", hasSize(2)))
+                .andExpect(jsonPath("$.content[0].id").exists())
+                .andExpect(jsonPath("$.content[0].destination").value("Destination 1"))
+                .andExpect(jsonPath("$.content[0].itemId").value(100))
+                .andExpect(jsonPath("$.content[0].orderStatus").value("DELIVERED"))
+                .andExpect(jsonPath("$.content[0].userId").value(1))
+                .andExpect(jsonPath("$.content[1].id").exists())
+                .andExpect(jsonPath("$.content[1].destination").value("Destination 2"))
+                .andExpect(jsonPath("$.content[1].itemId").value(100))
+                .andExpect(jsonPath("$.content[1].orderStatus").value("NEW"))
+                .andExpect(jsonPath("$.content[1].userId").value(2))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.totalElements").value(2))
                 .andDo(print());
     }
 
     @DisplayName("[Fail] get all orders by user")
     @ParameterizedTest
-    @ValueSource(strings = {"ROLE_ADMIN", "ROLE_COURIER"})
-    public void failGetAllOrdersByAdminTest(String roleName) throws Exception {
+    @ValueSource(strings = {"ROLE_USER", "ROLE_COURIER"})
+    public void failGetAllOrdersWithWrongRoleTest(String roleName) throws Exception {
 
         authentication(1L, roleName);
 
         mockMvc.perform(MockMvcRequestBuilders
-                        .get(FIND_ALL_BY_USER_URL)
+                        .get(FIND_ALL_BY_ADMIN_URL)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden())
                 .andDo(print());
     }
 
-    @DisplayName("[Fail] Unauthorized get all orders by user")
+    @DisplayName("[Fail] Unauthorized get all orders")
     @Test
     public void failUnauthorizedGetAllOrdersByAdminTest() throws Exception {
 
         mockMvc.perform(MockMvcRequestBuilders
-                        .get(FIND_ALL_BY_USER_URL)
+                        .get(FIND_ALL_BY_ADMIN_URL)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
                 .andDo(print());

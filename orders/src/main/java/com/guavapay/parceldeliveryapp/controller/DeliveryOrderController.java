@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -100,7 +101,7 @@ public class DeliveryOrderController {
             summary = "[User stories: Admin] Can view all parcel delivery orders",
             description = "Return all all parcel delivery orders"
     )
-    public Page<DeliveryOrderFullDto> findAll(Pageable pageable) {
+    public Page<DeliveryOrderFullDto> findAll(@ParameterObject Pageable pageable) {
         return deliveryOrderService.findAll(pageable);
     }
 
@@ -110,7 +111,7 @@ public class DeliveryOrderController {
             summary = "[User stories: Courier] Can view all parcel delivery orders that assigned to him",
             description = "Return all all parcel delivery orders that assigned to him"
     )
-    public List<DeliveryOrderDto> findAllByCourier() {
+    public List<DeliveryOrderFullDto> findAllByCourier() {
         return deliveryOrderService.findAllByCourier();
     }
 

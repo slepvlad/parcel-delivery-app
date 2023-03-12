@@ -1,6 +1,7 @@
 package com.guavapay.parceldeliveryapp.controller;
 
 import com.guavapay.parceldeliveryapp.dto.CreateDeliveryTaskRequest;
+import com.guavapay.parceldeliveryapp.dto.DeliveryTaskFullDto;
 import com.guavapay.parceldeliveryapp.dto.DeliveryTaskShortDto;
 import com.guavapay.parceldeliveryapp.dto.LongIdWrapper;
 import com.guavapay.parceldeliveryapp.model.DeliveryTaskStatus;
@@ -67,4 +68,12 @@ public class DeliveryTaskController {
     }
 
     //ToDo Can see the details of a delivery;
+    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
+    @GetMapping("/{deliveryTaskId}")
+    public DeliveryTaskFullDto getDeliveryTaskFullInfo(
+            @PathVariable Long deliveryTaskId
+    ) {
+        return deliveryTaskService.getDeliveryTaskFullInfo(deliveryTaskId);
+    }
+
 }
