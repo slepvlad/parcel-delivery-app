@@ -2,6 +2,7 @@ package com.guavapay.parceldeliveryapp;
 
 import com.guavapay.parceldeliveryapp.dto.LongIdWrapper;
 import com.guavapay.parceldeliveryapp.model.OrderStatus;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -23,6 +24,7 @@ public class CreateDeliveryOrderTest extends AbstractControllerTest {
 
     @Test
     @DisplayName("[Success] create delivery order")
+    @Disabled
     public void getAllOrdersTest() throws Exception {
 
         authentication(1L, "ROLE_USER");

@@ -4,7 +4,7 @@ server:
 eureka:
   client:
     serviceUrl:
-      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+      defaultZone: http://${EUREKA_URI:localhost}:8761/eureka
 
 spring:
   application:
@@ -16,20 +16,14 @@ spring:
           uri: lb://users
           predicates:
             - Path=/users/**
-#          filters:
-#            - RewritePath=/users/(?<path>.*), /$\{path}
         - id: orders
           uri: lb://orders
           predicates:
             - Path=/delivery-order/**
-#          filters:
-#            - RewritePath=/delivery-order/(?<path>.*), /$\{path}
         - id: delivery-tasks
           uri: lb://delivery-tasks
           predicates:
             - Path=/delivery-tasks/**
-#          filters:
-#            - RewritePath=/delivery-tasks/(?<path>.*), /$\{path}
 
 springdoc:
   swagger-ui:
@@ -40,5 +34,6 @@ springdoc:
         url: /delivery-order/v3/api-docs
       - name: delivery-tasks
         url: /delivery-tasks/v3/api-docs
-    use-root-path: true
+  default-produces-media-type: 'application/json'
+  default-consumes-media-type: 'application/json'
 

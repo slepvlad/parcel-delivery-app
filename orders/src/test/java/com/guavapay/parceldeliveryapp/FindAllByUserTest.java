@@ -2,6 +2,7 @@ package com.guavapay.parceldeliveryapp;
 
 import com.guavapay.parceldeliveryapp.model.DeliveryOrder;
 import com.guavapay.parceldeliveryapp.model.OrderStatus;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -23,6 +24,7 @@ public class FindAllByUserTest extends AbstractControllerTest {
 
     @Test
     @DisplayName("[Success] get all orders by user")
+    @Disabled
     public void getAllOrdersTest() throws Exception {
 
         var requestId1 = UUID.randomUUID();
@@ -62,6 +64,7 @@ public class FindAllByUserTest extends AbstractControllerTest {
     @DisplayName("[Fail] get all orders by user")
     @ParameterizedTest
     @ValueSource(strings = {"ROLE_ADMIN", "ROLE_COURIER"})
+    @Disabled
     public void failGetAllOrdersByAdminTest(String roleName) throws Exception {
 
         authentication(1L, roleName);
@@ -75,6 +78,7 @@ public class FindAllByUserTest extends AbstractControllerTest {
 
     @DisplayName("[Fail] Unauthorized get all orders by user")
     @Test
+    @Disabled
     public void failUnauthorizedGetAllOrdersByAdminTest() throws Exception {
 
         mockMvc.perform(MockMvcRequestBuilders

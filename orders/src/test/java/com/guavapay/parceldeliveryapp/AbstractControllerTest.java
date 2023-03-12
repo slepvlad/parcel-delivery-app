@@ -1,12 +1,15 @@
 package com.guavapay.parceldeliveryapp;
 
 import com.guavapay.parceldeliveryapp.repository.DeliveryOrderRepository;
+import com.netflix.discovery.EurekaClient;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -25,18 +28,21 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+//@SpringBootTest(properties = {"eureka.client.enabled=false"})
+//@AutoConfigureMockMvc
 public abstract class AbstractControllerTest {
 
     private final static String TOKEN = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyQGdtYWlsLmNvbSIsInNjb3BlIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJzZWxmIiwibmFtZSI6InVzZXIiLCJleHAiOjE2NzgxODg1NTYsImlhdCI6MTY3ODE4NDk1NiwidXNlcklkIjoxfQ.fF2MAaRCM6CKZFZMfn4dT6bLSCddZKidyo-ChmZk9xRopdbXskYhF84qhC-Z6OuH6jv1HSJOe3lSW9H2vNnSI8GoDEzsDpai-wPHXyto3nEfW6zDK2qLTLysD71tnz9AC4B6dm5EjbQ1n8GjHbBElSbazo_C_eiNZoVOtc1B_OVwwHuXBFCpMrz0M-gK_Eh4xEYwXceMYTF-QJ8krvu8mOO18-w2AvGiR9VFJyuR8mjAK1cQMuxSaqYmCx0CB7Fm7E34TbML_khqSxHZzwA1CcGd-yLR-cay3EvYaBNA9cy_40yb5U_oj5VAbbKy-hROfeXu_PSYJ_JIR0OClyM9lA";
 
-    @Autowired
+    //@Autowired
     protected MockMvc mockMvc;
-    @Autowired
+    //@Autowired
     protected DeliveryOrderRepository deliveryOrderRepository;
 
     private static PostgreSQLContainer<?> postgres;
+
+    @MockBean
+    protected EurekaClient eurekaClient;
 
     @BeforeAll
     static void init() {

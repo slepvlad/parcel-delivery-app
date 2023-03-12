@@ -9,6 +9,9 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpRequest;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.util.Assert;
@@ -17,9 +20,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 @RestController
 @RequestMapping("api/v1/auth")
 @RequiredArgsConstructor
+@Slf4j
 @Tag(name = "Authentication controller", description = "sign up an sign in users")
 public class AuthController {
 
@@ -30,7 +36,7 @@ public class AuthController {
             summary = "[User stories: User] Can create an user account",
             description = "Create new user by user"
     )
-    @PostMapping("/sign-up-user")
+    @PostMapping(value = "/sign-up-user", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     public LongIdWrapper signUpUser(@Valid @RequestBody SignUpRequest request) {
         return new LongIdWrapper(authService.signUpUser(request));
     }
@@ -53,6 +59,7 @@ public class AuthController {
             description = "Get JWT for login and api access"
     )
     public TokenDto signIn(Authentication authentication) {
+        log.info("Request: Hi");
         Assert.notNull(authentication, "Unauthorized. Wrong username or password");
         return authService.signIn(authentication);
     }

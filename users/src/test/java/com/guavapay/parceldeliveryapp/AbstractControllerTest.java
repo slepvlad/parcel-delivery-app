@@ -19,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.PostgreSQLContainer;
 
@@ -27,7 +28,7 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.Set;
 
-@SpringBootTest
+@SpringBootTest(properties = {"eureka.client.enabled=false"})
 @AutoConfigureMockMvc
 public abstract class AbstractControllerTest {
 
