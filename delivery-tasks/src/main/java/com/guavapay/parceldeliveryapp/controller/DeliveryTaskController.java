@@ -67,9 +67,12 @@ public class DeliveryTaskController {
         deliveryTaskService.setStatus(deliveryTaskId, authentication, status);
     }
 
-    //ToDo Can see the details of a delivery;
     @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
     @GetMapping("/{deliveryTaskId}")
+    @Operation(
+            summary = "[User stories: Admin] Can track the delivery order by coordinates",
+            description = "Can track the delivery task(order) by coordinates"
+    )
     public DeliveryTaskFullDto getDeliveryTaskFullInfo(
             @PathVariable Long deliveryTaskId
     ) {
